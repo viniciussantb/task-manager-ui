@@ -4,7 +4,6 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import axios from "axios";
 import dayjs from "dayjs";
-import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import { useState } from "react";
 import { FormContainer, ButtonContainer } from "./NewTaskModal.styles";
@@ -36,12 +35,13 @@ export function NewTaskModal(props) {
   };
 
   const postTask = async (task) => {
-    const dueDate = task.dueDate.format("YYYY-MM-DD");
-    await axios.post("http://localhost:8080", { ...task, dueDate });
+    await axios.post("http://localhost:8080", { ...task });
   };
 
   const handleButtonSubmit = async () => {
-    console.log(task);
+    const dueDate = new Date(task.dueDate);
+    task.dueDate = dueDate.getTime();
+
     await postTask(task);
     handleClose();
   };
@@ -107,11 +107,7 @@ export function NewTaskModal(props) {
               <MenuItem value={"CONCLUDED"}>Concluded</MenuItem>
             </TextField>
             <ButtonContainer>
-              <Button
-                variant="outlined"
-                type="submit"
-                onClick={handleButtonSubmit}
-              >
+              <Button variant="outlined" onClick={handleButtonSubmit}>
                 Create
               </Button>
             </ButtonContainer>

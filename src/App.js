@@ -68,8 +68,11 @@ export default function App() {
 
   const handleRowEdit = useCallback(
     (newRow) => {
-      const dueDate = newRow.dueDate.toISOString().split("T")[0];
-      axios.put(`http://localhost:8080/${newRow.id}`, { ...newRow, dueDate });
+      const dueDate = new Date(newRow.dueDate);
+      axios.put(`http://localhost:8080/${newRow.id}`, {
+        ...newRow,
+        dueDate: dueDate.getTime(),
+      });
       const updatedData = data.map((row) =>
         row.id === newRow.id ? newRow : row
       );
