@@ -1,96 +1,75 @@
-import { useState, useCallback } from "react";
-import {
-  DataGrid,
-  GRID_DATE_COL_DEF,
-  useGridApiContext,
-} from "@mui/x-data-grid";
+import { useState, useCallback, useMemo } from "react";
+import { DataGrid } from "@mui/x-data-grid";
 import { Box, Button } from "@mui/material";
-import { NewTaskModal } from "./components/NewTaskModal";
-import { unstable_useEnhancedEffect as useEnhancedEffect } from "@mui/utils";
-import * as React from "react";
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-
-const dateColumnType = {
-  ...GRID_DATE_COL_DEF,
-  resizable: false,
-  renderEditCell: (params) => {
-    return <GridEditDateCell {...params} />;
-  },
-};
+import { Filter } from "./components/Filter/Filter";
+import { NewTaskModal } from "./components/NewTaskModal/NewTaskModal";
+import { useEffect } from "react";
+import axios from "axios";
+import dayjs from "dayjs";
+import { Header, ButtonContainer } from "./App.styles";
 
 const columns = [
-  { field: "id", headerName: "ID", width: 90 },
-  { field: "name", headerName: "Name", width: 150, editable: true },
-  { field: "age", headerName: "Age", width: 150, editable: true },
+  { field: "id", headerName: "ID", width: 300 },
+  { field: "title", headerName: "Title", width: 300, editable: true },
   {
-    field: "date",
-    headerName: "Date",
-    width: 150,
+    field: "description",
+    headerName: "Description",
+    width: 300,
     editable: true,
-    ...dateColumnType,
+  },
+  {
+    field: "dueDate",
+    headerName: "Due Date",
+    width: 300,
+    editable: true,
+    type: "date",
+    valueGetter: (value, row) => dayjs(value).toDate(),
   },
 ];
 
-function GridEditDateCell({ id, field, value, colDef, hasFocus }) {
-  const apiRef = useGridApiContext();
-  const inputRef = React.useRef(null);
-  const Component = DatePicker;
+export default function App() {
+  const [data, setData] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selection, setSelection] = useState([]);
+  const [filter, setFilter] = useState("");
+  const filteredData = useMemo(() => {
+    return data.filter((task) =>
+      task.title.toLowerCase().includes(filter.toLowerCase())
+    );
+  }, [data, filter]);
 
-  const handleChange = (newValue) => {
-    apiRef.current.setEditCellValue({ id, field, value: newValue });
+  const fetchData = async () => {
+    const taskManagerResponse = await axios.get("http://localhost:8080");
+    setData(taskManagerResponse.data);
   };
 
-  useEnhancedEffect(() => {
-    if (hasFocus) {
-      inputRef.current.focus();
-    }
-  }, [hasFocus]);
-
-  return (
-    <DatePicker
-      value={value}
-      autoFocus
-      onChange={handleChange}
-      slotProps={{
-        textField: {
-          inputRef,
-          variant: "standard",
-          fullWidth: true,
-          sx: {
-            padding: "0 9px",
-            justifyContent: "center",
-          },
-          InputProps: {
-            disableUnderline: true,
-            sx: { fontSize: "inherit" },
-          },
-        },
-      }}
-    />
-  );
-}
-
-const rows = [
-  { id: 1, name: "John Doe", age: 25, date: new Date() },
-  { id: 2, name: "Jane Smith", age: 32, date: new Date() },
-  { id: 4, name: "Alice Johnson", age: 40, date: new Date() },
-];
-
-export default function EditableDataGrid() {
-  const [data, setData] = useState(rows);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selection, setSelection] = useState();
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const handleOpenModal = () => {
     setIsModalOpen(true);
   };
 
-  const onCloseModal = () => {
+  const handleOnCloseModal = () => {
     setIsModalOpen(false);
+    fetchData();
+  };
+
+  const handleDeleteTask = async () => {
+    const deleteTask = selection.map((id) =>
+      axios.delete(`http://localhost:8080/${id}`)
+    );
+
+    await Promise.all(deleteTask);
+
+    fetchData();
   };
 
   const handleRowEdit = useCallback(
-    (newRow, oldRow) => {
+    (newRow) => {
+      const dueDate = newRow.dueDate.toISOString().split("T")[0];
+      axios.put(`http://localhost:8080/${newRow.id}`, { ...newRow, dueDate });
       const updatedData = data.map((row) =>
         row.id === newRow.id ? newRow : row
       );
@@ -102,12 +81,26 @@ export default function EditableDataGrid() {
 
   return (
     <Box sx={{ height: 500, width: "100%" }}>
-      <Button onClick={handleOpenModal}>Create Task</Button>
-      <NewTaskModal isModalOpen={isModalOpen} onCloseModal={onCloseModal} />
+      <Header>
+        <ButtonContainer>
+          <Button onClick={handleOpenModal}>Create Task</Button>
+          {selection.length > 0 && (
+            <Button color="error" onClick={handleDeleteTask}>
+              Delete Task
+            </Button>
+          )}
+        </ButtonContainer>
+        <Filter onChange={setFilter} />
+      </Header>
+      <NewTaskModal
+        isModalOpen={isModalOpen}
+        onCloseModal={handleOnCloseModal}
+      />
       <DataGrid
-        rows={data}
+        rows={filteredData}
         columns={columns}
-        pageSize={5}
+        editMode="row"
+        pageSize={25}
         rowsPerPageOptions={[5]}
         processRowUpdate={handleRowEdit}
         checkboxSelection

@@ -5,8 +5,14 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@mui/icons-material": "^6.4.3",
     "@mui/x-data-grid": "^7.26.0",
+    "@mui/x-data-grid-generator": "^7.26.0",
     "@mui/x-date-pickers": "^7.26.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.2.0",
+    "axios": "^1.7.9",
+    "axios-mock-adapter": "^2.1.0",
     "cra-template": "1.2.0",
     "dayjs": "^1.11.13",
     "mui": "^0.0.1",
@@ -38,6 +44,11 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
+    ]
+  },
+  "jest": {
+    "transformIgnorePatterns": [
+      "node_modules/(?!axios)"
     ]
   }
 }
