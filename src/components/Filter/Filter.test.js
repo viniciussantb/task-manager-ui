@@ -5,7 +5,7 @@ describe("Filter", () => {
   it("should render with initial empty input value", () => {
     render(<Filter onChange={() => {}} />);
     const inputElement = screen.getByPlaceholderText("Title Filter");
-    expect(inputElement.value).toBe(""); // Initially should be empty
+    expect(inputElement.value).toBe("");
   });
 
   it("should call onChange prop when text is typed", () => {
@@ -16,7 +16,6 @@ describe("Filter", () => {
 
     fireEvent.change(inputElement, { target: { value: "Test text" } });
 
-    // Check if the mock function was called
     expect(mockOnChange).toHaveBeenCalledWith("Test text");
   });
 
@@ -24,10 +23,8 @@ describe("Filter", () => {
     render(<Filter onChange={() => {}} />);
     const inputElement = screen.getByPlaceholderText("Title Filter");
 
-    // Type into the input
     fireEvent.change(inputElement, { target: { value: "New value" } });
 
-    // Check if the value of input is updated
     expect(inputElement.value).toBe("New value");
   });
 
@@ -36,8 +33,6 @@ describe("Filter", () => {
     const inputElement = screen.getByPlaceholderText("Title Filter");
 
     fireEvent.change(inputElement, { target: { value: "Another text" } });
-
-    // Check if the state reflects the input value
     expect(inputElement.value).toBe("Another text");
   });
 });
