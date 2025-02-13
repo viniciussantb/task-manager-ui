@@ -6,7 +6,12 @@ import axios from "axios";
 import dayjs from "dayjs";
 import MenuItem from "@mui/material/MenuItem";
 import { useState } from "react";
-import { FormContainer, ButtonContainer } from "./NewTaskModal.styles";
+import {
+  FormContainer,
+  ButtonContainer,
+  Field,
+  DateField,
+} from "./NewTaskModal.styles";
 
 export function NewTaskModal(props) {
   const { isModalOpen, onCloseModal } = props;
@@ -74,26 +79,26 @@ export function NewTaskModal(props) {
         </Typography>
         <div>
           <FormContainer>
-            <TextField
+            <Field
               title="Task Title"
               label="Title"
               value={task.title}
               onChange={(e) => setValue("title", e.target.value)}
             />
-            <TextField
+            <Field
               title="Description"
               label="Description"
               value={task.description}
               onChange={(e) => setValue("description", e.target.value)}
             />
             <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DatePicker
+              <DateField
                 label="Due Date"
                 value={task.dueDate}
                 onChange={(value) => setValue("dueDate", value)}
               />
             </LocalizationProvider>
-            <TextField
+            <Field
               title="Status"
               data-testid="status-select"
               value={task.status}
@@ -105,7 +110,7 @@ export function NewTaskModal(props) {
               <MenuItem value={"PENDING"}>Pending</MenuItem>
               <MenuItem value={"IN_PROGRESS"}>In Progress</MenuItem>
               <MenuItem value={"CONCLUDED"}>Concluded</MenuItem>
-            </TextField>
+            </Field>
             <ButtonContainer>
               <Button variant="outlined" onClick={handleButtonSubmit}>
                 Create
